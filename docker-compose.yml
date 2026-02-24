@@ -1,0 +1,19 @@
+services:
+  nbvp:
+    build: .
+    image: nbvp_exploration:noetic
+    container_name: nbvp_exploration
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XAUTHORITY=/tmp/.docker.xauth
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+    devices:
+      - /dev/dri:/dev/dri           # for OpenGL on Intel/AMD
+    network_mode: host              # ROS1 prefers host networking for simplicity
+    stdin_open: true
+    tty: true
+
