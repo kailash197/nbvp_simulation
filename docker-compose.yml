@@ -1,7 +1,7 @@
 services:
   nbvp:
     build: .
-    image: nbvp_exploration:noetic
+    image: nbvp_exploration:melodic
     container_name: nbvp_exploration
     environment:
       - DISPLAY=${DISPLAY}

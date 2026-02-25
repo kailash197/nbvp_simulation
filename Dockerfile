@@ -166,27 +166,29 @@ RUN cd /root/catkin_ws/src && \
     source /root/catkin_ws/devel/setup.bash
 
 # Stub package for impedaance control
-RUN source /opt/ros/melodic/setup.bash && \
-    cd /root/catkin_ws/src && \
-    mkdir -p impedance_control
-COPY ./impedance_control/package.xml /root/catkin_ws/src/impedance_control/package.xml
-COPY ./impedance_control/CMakeLists.txt /root/catkin_ws/src/impedance_control/CMakeLists.txt
-RUN source /opt/ros/melodic/setup.bash && \
-    cd /root/catkin_ws && \
-    catkin_make --pkg impedance_control --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    source /root/catkin_ws/devel/setup.bash
+# RUN source /opt/ros/melodic/setup.bash && \
+#     cd /root/catkin_ws/src && \
+#     mkdir -p impedance_control
+# COPY ./impedance_control/package.xml /root/catkin_ws/src/impedance_control/package.xml
+# COPY ./impedance_control/CMakeLists.txt /root/catkin_ws/src/impedance_control/CMakeLists.txt
+# RUN source /opt/ros/melodic/setup.bash && \
+#     cd /root/catkin_ws && \
+#     catkin_make --pkg impedance_control --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+#     source /root/catkin_ws/devel/setup.bash
 
 # Stub package for aerial_manipulators_control
-RUN source /opt/ros/melodic/setup.bash && \
-    cd /root/catkin_ws/src && \
-    mkdir -p aerial_manipulators_control/include/aerial_manipulators_control
-COPY ./aerial_manipulators_control/package.xml /root/catkin_ws/src/aerial_manipulators_control/package.xml
-COPY ./aerial_manipulators_control/CMakeLists.txt /root/catkin_ws/src/aerial_manipulators_control/CMakeLists.txt
-COPY ./aerial_manipulators_control/include/aerial_manipulators_control/stub.h /root/catkin_ws/src/aerial_manipulators_control/include/aerial_manipulators_control/stub.h
-RUN source /opt/ros/melodic/setup.bash && \
-    cd /root/catkin_ws && \
-    catkin_make --pkg aerial_manipulators_control --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    source /root/catkin_ws/devel/setup.bash
+# RUN source /opt/ros/melodic/setup.bash && \
+#     cd /root/catkin_ws/src && \
+#     mkdir -p aerial_manipulators_control/include/aerial_manipulators_control
+# COPY ./aerial_manipulators_control/package.xml /root/catkin_ws/src/aerial_manipulators_control/package.xml
+# COPY ./aerial_manipulators_control/CMakeLists.txt /root/catkin_ws/src/aerial_manipulators_control/CMakeLists.txt
+# COPY ./aerial_manipulators_control/include/aerial_manipulators_control/stub.h /root/catkin_ws/src/aerial_manipulators_control/include/aerial_manipulators_control/stub.h
+# COPY ./aerial_manipulators_control/include/aerial_manipulators_control/ManipulatorControl.h /root/catkin_ws/src/aerial_manipulators_control/include/aerial_manipulators_control/ManipulatorControl.h
+# COPY ./aerial_manipulators_control/src/WpManipulatorKinematics.cpp /root/catkin_ws/src/aerial_manipulators_control/src/WpManipulatorKinematics.cpp
+# RUN source /opt/ros/melodic/setup.bash && \
+#     cd /root/catkin_ws && \
+#     catkin_make --pkg aerial_manipulators_control --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+#     source /root/catkin_ws/devel/setup.bash
 
 # RUN cd /root/catkin_ws/src && \
 #     git clone -b devel https://github.com/larics/aerial_manipulators.git && \
@@ -204,11 +206,33 @@ RUN cd /root/catkin_ws/src && \
     catkin_make --pkg topp_ros --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     source /root/catkin_ws/devel/setup.bash
 
-# RUN cd /root/catkin_ws/src && \
-#     git clone https://github.com/larics/larics_motion_planning.git && \
+RUN cd /root/catkin_ws/src && \
+    git clone -b exploration https://github.com/larics/larics_motion_planning.git && \
+    cd larics_motion_planning && \
+    # git checkout 4e88fe933583d3c && \
+    source /opt/ros/melodic/setup.bash && \
+    cd /root/catkin_ws && \
+    catkin_make --pkg larics_motion_planning --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    source /root/catkin_ws/devel/setup.bash
+
+# RUN mkdir -p /root/catkin_ws/src/larics_motion_planning
+# COPY ./larics_motion_planning /root/catkin_ws/src/larics_motion_planning
+# RUN cd /root/catkin_ws/src/larics_motion_planning && \
 #     source /opt/ros/melodic/setup.bash && \
 #     cd /root/catkin_ws && \
-#     catkin_make --pkg topp_ros --cmake-args -DCMAKE_BUILD_TYPE=Release -Dompl_DIR=/usr/share/ompl/ompl-config.cmake && \
+#     # catkin_make --pkg larics_motion_planning --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+#     source /root/catkin_ws/devel/setup.bash
+
+# RUN apt-get update && apt-get install -y \
+#     python-catkin-tools \
+#     ros-melodic-octomap-* \
+#     && rm -rf /var/lib/apt/lists/*
+
+# RUN cd /root/catkin_ws/src && \
+#     git clone https://github.com/larics/nbvp_exploration.git && \
+#     source /opt/ros/melodic/setup.bash && \
+#     cd /root/catkin_ws && \
+#     catkin_make --pkg nbvp_exploration --cmake-args -DCMAKE_BUILD_TYPE=Release && \
 #     source /root/catkin_ws/devel/setup.bash
 
 WORKDIR /root/catkin_ws
@@ -216,3 +240,5 @@ COPY ./entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
 ENTRYPOINT [ "/root/entrypoint.sh" ]
 CMD ["/bin/bash"]
+
+# https://github.com/RobertMilijas/uav_ros_simulation.git
