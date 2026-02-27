@@ -1,3 +1,10 @@
+## REQUIREMENTS:
+# - Ubuntu 18.04
+# - ROS Melodic
+# - Gazebo simulation of Ardupilot/PX4 UAV platform
+# - Path planning and navigation
+# - Shadowcasting-based NBV exploration planner
+
 FROM ubuntu:18.04
 
 # Prevent interactive tz dialogs
@@ -19,7 +26,6 @@ RUN apt-get update && apt-get install -y ros-melodic-desktop-full
 
 # Source ROS on container startup
 RUN echo "source /opt/ros/melodic/setup.bash" >> /root/.bashrc
-
 
 # Create catkin workspace
 RUN mkdir -p /root/catkin_ws/src
@@ -60,24 +66,15 @@ RUN apt-get update && apt-get install -y \
     wget \
     tree \
     && rm -rf /var/lib/apt/lists/*
-# Step 4 done
 
-# Step 5
+# #############################
+# #      NBVP EXPLORATION
+# #############################
+
 # Clone catkinized dependencies from nbvp_exploration repository
-RUN cd /root/catkin_ws/src && \
-    git clone https://github.com/larics/nbvp_exploration.git nbvp_repo && \
-    cp -r nbvp_repo/catkin_simple . && \
-    cp -r nbvp_repo/glog_catkin . && \
-    cp -r nbvp_repo/gflags_catkin . && \
-    cp -r nbvp_repo/eigen_catkin . && \
-    cp -r nbvp_repo/eigen_checks . && \
-    cp -r nbvp_repo/kdtree . && \
-    cp -r nbvp_repo/minkindr . && \
-    cp -r nbvp_repo/minkindr_ros . && \
-    cp -r nbvp_repo/volumetric_mapping . && \
-    cp -r nbvp_repo/nbvplanner . && \
-    cp -r nbvp_repo/interface_nbvp_rotors . && \
-    rm -rf nbvp_repo
+WORKDIR /root/catkin_ws/src
+RUN mkdir -p /root/catkin_ws/src/nbvp_exploration
+COPY ./nbvp_exploration /root/catkin_ws/src/nbvp_exploration
 
 SHELL ["/bin/bash", "-lc"]
 RUN source /opt/ros/melodic/setup.bash && \
@@ -89,68 +86,41 @@ RUN source /opt/ros/melodic/setup.bash && \
     catkin_make --pkg eigen_checks --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     catkin_make --pkg kdtree --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     catkin_make --pkg minkindr --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    catkin_make --pkg volumetric_mapping --cmake-args -DCMAKE_BUILD_TYPE=Release
-
-RUN source /opt/ros/melodic/setup.bash && \
-    cd /root/catkin_ws && \
-    catkin_make --pkg nbvplanner --cmake-args -DCMAKE_BUILD_TYPE=Release
-
-RUN source /opt/ros/melodic/setup.bash && \
-    cd /root/catkin_ws && \
+    catkin_make --pkg minkindr_conversions --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg volumetric_mapping --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg nbvplanner --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     rm -rf /root/catkin_ws/devel/include/eigen3 && \
-    catkin_make --pkg interface_nbvp_rotors --cmake-args -DCMAKE_BUILD_TYPE=Release
-
-RUN source /root/catkin_ws/devel/setup.bash
-
-RUN apt-get update && apt-get install -y \
-    ros-melodic-rviz \
-    mesa-utils \
-    x11-apps \
-    tmux \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN cd /root/catkin_ws/src && \
-    git clone https://github.com/larics/nbvp_exploration.git nbvp_startup_tmp && \
-    mkdir -p nbvp_exploration_startup && \
-    cp -r nbvp_startup_tmp/startup/kopterworx_one_flying nbvp_exploration_startup/ && \
-    rm -rf nbvp_startup_tmp
+    catkin_make --pkg interface_nbvp_rotors --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    source /root/catkin_ws/devel/setup.bash
 
 RUN apt-get update && apt-get install -y \
     ros-melodic-mavros \
     ros-melodic-mavros-extras \
-    && rm -rf /var/lib/apt/lists/*
-
-
-# RUN cd /root/catkin_ws/src && \
-#     git clone https://github.com/larics/topp_ros.git && \
-#     source /opt/ros/melodic/setup.bash && \
-#     cd /root/catkin_ws && \
-#     catkin_make --pkg topp_ros --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-#     source /root/catkin_ws/devel/setup.bash
-
-RUN apt-get update && apt-get install -y \
-    ros-melodic-octomap-server ros-melodic-octomap-rviz-plugins \
+    ros-melodic-octomap-server \
+    ros-melodic-octomap-rviz-plugins \
+    ros-melodic-octomap-* \
     ros-melodic-moveit \
     ros-melodic-moveit-visual-tools \
     ros-melodic-dynamixel-workbench-msgs \
     ros-melodic-ompl \
+    ros-melodic-rviz \
     libompl-dev \
+    mesa-utils \
+    x11-apps \
+    tmux \
+    python-catkin-tools \
     && rm -rf /var/lib/apt/lists/*
 
-RUN cd /root/catkin_ws/src && \
-    git clone -b devel https://github.com/larics/aerial_manipulators.git && \
-    mv ./aerial_manipulators/aerial_manipulators_description/ . && \
-    rm -rf ./aerial_manipulators && \
-    source /opt/ros/melodic/setup.bash && \
+# #############################
+# #  LARICS MOTION PLANNING
+# #############################
+COPY ./aerial_manipulators/aerial_manipulators_description /root/catkin_ws/src/aerial_manipulators/aerial_manipulators_description
+RUN source /opt/ros/melodic/setup.bash && \
     cd /root/catkin_ws && \
     catkin_make --pkg aerial_manipulators_description --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     source /root/catkin_ws/devel/setup.bash
-
-RUN cd /root/catkin_ws/src && \
-    git clone -b devel https://github.com/larics/aerial_manipulators.git && \
-    mv ./aerial_manipulators/aerial_manipulators_moveit/ . && \
-    rm -rf ./aerial_manipulators && \
-    source /opt/ros/melodic/setup.bash && \
+COPY ./aerial_manipulators/aerial_manipulators_moveit /root/catkin_ws/src/aerial_manipulators/aerial_manipulators_moveit
+RUN source /opt/ros/melodic/setup.bash && \
     cd /root/catkin_ws && \
     catkin_make --pkg asap_manipulator --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     catkin_make --pkg wp_manipulator --cmake-args -DCMAKE_BUILD_TYPE=Release && \
@@ -158,82 +128,60 @@ RUN cd /root/catkin_ws/src && \
     catkin_make --pkg wp_manipulator_3rx --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     source /root/catkin_ws/devel/setup.bash
 
-RUN cd /root/catkin_ws/src && \
-    git clone https://github.com/larics/larics_gazebo_worlds.git && \
-    source /opt/ros/melodic/setup.bash && \
+
+
+COPY ./larics_gazebo_worlds /root/catkin_ws/src/larics_gazebo_worlds
+RUN source /opt/ros/melodic/setup.bash && \
     cd /root/catkin_ws && \
     catkin_make --pkg larics_gazebo_worlds --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     source /root/catkin_ws/devel/setup.bash
 
-# Stub package for impedaance control
-# RUN source /opt/ros/melodic/setup.bash && \
-#     cd /root/catkin_ws/src && \
-#     mkdir -p impedance_control
-# COPY ./impedance_control/package.xml /root/catkin_ws/src/impedance_control/package.xml
-# COPY ./impedance_control/CMakeLists.txt /root/catkin_ws/src/impedance_control/CMakeLists.txt
-# RUN source /opt/ros/melodic/setup.bash && \
-#     cd /root/catkin_ws && \
-#     catkin_make --pkg impedance_control --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-#     source /root/catkin_ws/devel/setup.bash
-
-# Stub package for aerial_manipulators_control
-# RUN source /opt/ros/melodic/setup.bash && \
-#     cd /root/catkin_ws/src && \
-#     mkdir -p aerial_manipulators_control/include/aerial_manipulators_control
-# COPY ./aerial_manipulators_control/package.xml /root/catkin_ws/src/aerial_manipulators_control/package.xml
-# COPY ./aerial_manipulators_control/CMakeLists.txt /root/catkin_ws/src/aerial_manipulators_control/CMakeLists.txt
-# COPY ./aerial_manipulators_control/include/aerial_manipulators_control/stub.h /root/catkin_ws/src/aerial_manipulators_control/include/aerial_manipulators_control/stub.h
-# COPY ./aerial_manipulators_control/include/aerial_manipulators_control/ManipulatorControl.h /root/catkin_ws/src/aerial_manipulators_control/include/aerial_manipulators_control/ManipulatorControl.h
-# COPY ./aerial_manipulators_control/src/WpManipulatorKinematics.cpp /root/catkin_ws/src/aerial_manipulators_control/src/WpManipulatorKinematics.cpp
-# RUN source /opt/ros/melodic/setup.bash && \
-#     cd /root/catkin_ws && \
-#     catkin_make --pkg aerial_manipulators_control --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-#     source /root/catkin_ws/devel/setup.bash
-
-# RUN cd /root/catkin_ws/src && \
-#     git clone -b devel https://github.com/larics/aerial_manipulators.git && \
-#     mv ./aerial_manipulators/aerial_manipulators_control/ ./ && \
-#     rm -rf ./aerial_manipulators && \
-#     source /opt/ros/melodic/setup.bash && \
-#     cd /root/catkin_ws && \
-#     catkin_make --pkg aerial_manipulators_control --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-#     source /root/catkin_ws/devel/setup.bash
-
-RUN cd /root/catkin_ws/src && \
-    git clone https://github.com/larics/topp_ros.git && \
-    source /opt/ros/melodic/setup.bash && \
+COPY ./topp_ros /root/catkin_ws/src/topp_ros
+RUN source /opt/ros/melodic/setup.bash && \
     cd /root/catkin_ws && \
     catkin_make --pkg topp_ros --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     source /root/catkin_ws/devel/setup.bash
 
-RUN cd /root/catkin_ws/src && \
-    git clone -b exploration https://github.com/larics/larics_motion_planning.git && \
-    cd larics_motion_planning && \
-    # git checkout 4e88fe933583d3c && \
+COPY ./larics_motion_planning /root/catkin_ws/src/larics_motion_planning
+RUN cd /root/catkin_ws/src/larics_motion_planning && \
+    git checkout exploration && \
+    # The following dependencies have been removed in exploration branch.
+    # 239171d Remove dependency on aerial manipulators and impedance control repositories
     source /opt/ros/melodic/setup.bash && \
     cd /root/catkin_ws && \
     catkin_make --pkg larics_motion_planning --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     source /root/catkin_ws/devel/setup.bash
 
-# RUN mkdir -p /root/catkin_ws/src/larics_motion_planning
-# COPY ./larics_motion_planning /root/catkin_ws/src/larics_motion_planning
-# RUN cd /root/catkin_ws/src/larics_motion_planning && \
-#     source /opt/ros/melodic/setup.bash && \
-#     cd /root/catkin_ws && \
-#     # catkin_make --pkg larics_motion_planning --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-#     source /root/catkin_ws/devel/setup.bash
+# #############################
+# #     UAV ROS SIMULATION
+# #############################
+COPY ./uav_ros_simulation /root/catkin_ws/src/uav_ros_simulation
 
-# RUN apt-get update && apt-get install -y \
-#     python-catkin-tools \
-#     ros-melodic-octomap-* \
-#     && rm -rf /var/lib/apt/lists/*
+# missing repo
+# https://github.com/lmark1/uav_ros_stack
+# maybe moved to following:
+# https://github.com/mkrizmancic/uav_ros_stack
 
-# RUN cd /root/catkin_ws/src && \
-#     git clone https://github.com/larics/nbvp_exploration.git && \
-#     source /opt/ros/melodic/setup.bash && \
-#     cd /root/catkin_ws && \
-#     catkin_make --pkg nbvp_exploration --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-#     source /root/catkin_ws/devel/setup.bash
+# RUN mkdir -p /root/catkin_ws/src/uav_ros_simulation
+# COPY ./uav_ros_simulation /root/catkin_ws/src/uav_ros_simulation
+
+# RUN apt-get update && \
+#     apt-get install -y --no-install-recommends tzdata  dialog apt-utils && \
+#     apt-get -y install gnupg2 libterm-readline-gnu-perl lsb-release && \
+#     apt-get -y upgrade --fix-missing && \
+#     apt-get -y install python-pip python3-pip python-setuptools python3-setuptools && \
+#     rm -rf /var/lib/apt/lists/*
+
+# RUN pip3 install gitman && \
+#     sudo -H pip3 install gitman
+
+# # WORKDIR /root/catkin_ws/src/uav_ros_simulation/installation
+# # RUN gitman install --force
+
+# #############################
+# #     VELODYNE SIMULATION
+# #############################
+
 
 WORKDIR /root/catkin_ws
 COPY ./entrypoint.sh /root/entrypoint.sh
