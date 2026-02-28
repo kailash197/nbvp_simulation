@@ -155,8 +155,47 @@ RUN cd /root/catkin_ws/src/larics_motion_planning && \
 # #############################
 # #     UAV ROS SIMULATION
 # #############################
-COPY ./uav_ros_simulation /root/catkin_ws/src/uav_ros_simulation
+ENV ROS_DISTRO melodic
+ENV distro 18.04
 
+# 1. install dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends tzdata  dialog apt-utils && \
+    apt-get -y install gnupg2 libterm-readline-gnu-perl lsb-release && \
+    apt-get -y upgrade --fix-missing && \
+    apt-get -y install python-pip python3-pip python-setuptools python3-setuptools && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN sleep 90 && \
+    { sudo systemctl stop google-instance-setup.service && \
+        echo "gce service stopped" || \
+        echo "gce service not stopped"; } && \
+    { sudo timeout 120s apt-get -y install gce-compute-image-packages || \
+        echo "\e[1;31mInstallation of gce-compute-image-packages failed\e[0m"; }
+
+# Dont install dependencies/ros.sh, already installed in ros-melodic-desktop-full
+# bash $MY_PATH/dependencies/ros.sh
+
+# install gitman and use it to install dependencies of uav_ros_simulation
+# bash $MY_PATH/dependencies/gitman.sh
+RUN pip3 install gitman && \
+    sudo -H pip3 install gitman
+
+COPY ./uav_ros_simulation /root/catkin_ws/src/uav_ros_simulation
+COPY ./larics_uav_ros_simulation /root/catkin_ws/src/larics_uav_ros_simulation
+WORKDIR /root/catkin_ws/src/uav_ros_simulation/installation
+RUN gitman install --force
+
+# WORKDIR /root/catkin_ws/src/uav_ros_simulation/
+# RUN rm -f firmware/ardupilot && \
+#     git clone --recursive https://github.com/larics/ardupilot.git ./firmware/ardupilot && \
+#     ln -sf ../.gitman/ardupilot firmware/ardupilot && \
+#     cd /root/catkin_ws/src/uav_ros_simulation/firmware/ardupilot && \
+#     git checkout master && \
+#     git submodule update --init --recursive
+
+
+# RUN /root/catkin_ws/src/uav_ros_simulation/installation/simple_install.sh
 # missing repo
 # https://github.com/lmark1/uav_ros_stack
 # maybe moved to following:
@@ -165,12 +204,6 @@ COPY ./uav_ros_simulation /root/catkin_ws/src/uav_ros_simulation
 # RUN mkdir -p /root/catkin_ws/src/uav_ros_simulation
 # COPY ./uav_ros_simulation /root/catkin_ws/src/uav_ros_simulation
 
-# RUN apt-get update && \
-#     apt-get install -y --no-install-recommends tzdata  dialog apt-utils && \
-#     apt-get -y install gnupg2 libterm-readline-gnu-perl lsb-release && \
-#     apt-get -y upgrade --fix-missing && \
-#     apt-get -y install python-pip python3-pip python-setuptools python3-setuptools && \
-#     rm -rf /var/lib/apt/lists/*
 
 # RUN pip3 install gitman && \
 #     sudo -H pip3 install gitman
