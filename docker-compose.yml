@@ -17,3 +17,34 @@ services:
     stdin_open: true
     tty: true
 
+  uav_ros_sim:
+    build:
+      context: .
+      dockerfile: Dockerfile.UAV
+    image: uav_simulation:latest
+    container_name: uav_ros_simulation
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - XAUTHORITY=/tmp/.docker.xauth
+      - TERM=xterm-256color
+      - SSH_AUTH_SOCK=/ssh-agent
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ~/.ssh/ssh_auth_sock:/ssh-agent:rw  # SSH agent forwarding
+    devices:
+      - /dev/dri:/dev/dri           # for OpenGL on Intel/AMD
+    network_mode: host
+    privileged: true
+    stdin_open: true
+    tty: true
+    # For GPU support (uncomment if needed)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]

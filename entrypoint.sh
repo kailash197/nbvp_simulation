@@ -1,8 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 set -e
 # Source ROS and the workspace on every container start
-source /opt/ros/melodic/setup.bash
-if [ -f /root/catkin_ws/devel/setup.bash ]; then
-  source /root/catkin_ws/devel/setup.bash
-fi
+[ -f /opt/ros/${ROS_DISTRO}/setup.bash ] && source /opt/ros/${ROS_DISTRO}/setup.bash
+[ -f /root/catkin_ws/devel/setup.bash ] && source /root/catkin_ws/devel/setup.bash
+
 exec "$@"

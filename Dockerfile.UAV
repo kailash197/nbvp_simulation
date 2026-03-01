@@ -1,0 +1,79 @@
+## REQUIREMENTS:
+# - Ubuntu 18.04
+# - ROS Melodic
+# - Gazebo simulation of Ardupilot/PX4 UAV platform
+# - Path planning and navigation
+# - Shadowcasting-based NBV exploration planner
+
+FROM lmark1/uav_ros_simulation:focal-bin-0.0.1
+
+ENV DEBIAN_FRONTEND=noninteractive
+# Fix ROS GPG key
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key | apt-key add - \
+    && apt-get update
+RUN apt-get update && apt-get install -y \
+    tree \
+    ros-noetic-pcl-ros \
+    ros-noetic-pcl-conversions \
+    ros-noetic-mav-* \
+    ros-noetic-octomap-server \
+    ros-noetic-octomap-rviz-plugins \
+    ros-noetic-octomap-* \
+    ros-noetic-moveit \
+    ros-noetic-moveit-visual-tools \
+    ros-noetic-dynamixel-workbench-msgs \
+    ros-noetic-ompl \
+    libompl-dev \
+    mesa-utils \
+    x11-apps \
+    python3-catkin-tools \
+    libterm-readline-gnu-perl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --upgrade pip && \
+    pip3 install gitman && \
+    sudo -H pip3 install gitman
+
+# Clone catkinized dependencies from nbvp_exploration repository
+SHELL ["/bin/bash", "-lc"]
+RUN mkdir -p /root/uav_ws/src/nbvp_exploration
+
+COPY ./nbvp_exploration/ /root/uav_ws/src/nbvp_exploration
+RUN source /opt/ros/noetic/setup.bash && \
+    cd /root/uav_ws && \
+    rm -rf ./src/nbvp_exploration/interface_nbvp_rotors && \
+    catkin_make --pkg eigen_catkin --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg gflags_catkin --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg glog_catkin --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg eigen_checks --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg kdtree --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg minkindr --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg minkindr_conversions --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg volumetric_mapping --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    source /root/uav_ws/devel/setup.bash
+
+RUN source /opt/ros/noetic/setup.bash && \
+    cd /root/uav_ws && \
+    catkin_make --pkg nbvplanner --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    source /root/uav_ws/devel/setup.bash
+
+# mav_msgs are only available for melodic
+# use source to compiel mav_msgs
+COPY ./mav_comm /root/uav_ws/src/mav_comm
+RUN source /opt/ros/noetic/setup.bash && \
+    cd /root/uav_ws && \
+    catkin_make --pkg mav_msgs --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    source /root/uav_ws/devel/setup.bash
+
+COPY ./nbvp_exploration/interface_nbvp_rotors /root/uav_ws/src/nbvp_exploration/interface_nbvp_rotors
+RUN source /opt/ros/noetic/setup.bash && \
+    cd /root/uav_ws && \
+    rm -rf /root/uav_ws/devel/include/eigen3 && \
+    catkin_make --pkg interface_nbvp_rotors --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    source /root/uav_ws/devel/setup.bash
+
+WORKDIR /root/uav_ws
+COPY ./entrypoint.sh /root/entrypoint.sh
+RUN chmod +x /root/entrypoint.sh
+ENTRYPOINT [ "/root/entrypoint.sh" ]
+CMD ["/bin/bash"]
