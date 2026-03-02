@@ -1,6 +1,6 @@
 ## REQUIREMENTS:
-# - Ubuntu 18.04
-# - ROS Melodic
+# - Ubuntu 20.04
+# - ROS noetic
 # - Gazebo simulation of Ardupilot/PX4 UAV platform
 # - Path planning and navigation
 # - Shadowcasting-based NBV exploration planner
@@ -70,6 +70,46 @@ RUN source /opt/ros/noetic/setup.bash && \
     cd /root/uav_ws && \
     rm -rf /root/uav_ws/devel/include/eigen3 && \
     catkin_make --pkg interface_nbvp_rotors --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    source /root/uav_ws/devel/setup.bash
+
+# #############################
+# #  LARICS MOTION PLANNING
+# #############################
+COPY ./aerial_manipulators/aerial_manipulators_description /root/uav_ws/src/aerial_manipulators/aerial_manipulators_description
+RUN source /opt/ros/noetic/setup.bash && \
+    cd /root/uav_ws && \
+    catkin_make --pkg aerial_manipulators_description --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    source /root/uav_ws/devel/setup.bash
+
+COPY ./aerial_manipulators/aerial_manipulators_moveit /root/uav_ws/src/aerial_manipulators/aerial_manipulators_moveit
+RUN source /opt/ros/noetic/setup.bash && \
+    cd /root/uav_ws && \
+    catkin_make --pkg asap_manipulator --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg wp_manipulator --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg wp_manipulator_3r --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    catkin_make --pkg wp_manipulator_3rx --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    source /root/uav_ws/devel/setup.bash
+
+COPY ./larics_gazebo_worlds /root/uav_ws/src/larics_gazebo_worlds
+RUN source /opt/ros/noetic/setup.bash && \
+    cd /root/uav_ws && \
+    catkin_make --pkg larics_gazebo_worlds --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    source /root/uav_ws/devel/setup.bash
+
+COPY ./topp_ros /root/uav_ws/src/topp_ros
+RUN source /opt/ros/noetic/setup.bash && \
+    cd /root/uav_ws && \
+    catkin_make --pkg topp_ros --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    source /root/uav_ws/devel/setup.bash
+
+COPY ./larics_motion_planning /root/uav_ws/src/larics_motion_planning
+RUN cd /root/uav_ws/src/larics_motion_planning && \
+    git checkout exploration && \
+    # The following dependencies have been removed in exploration branch.
+    # 239171d Remove dependency on aerial manipulators and impedance control repositories
+    source /opt/ros/noetic/setup.bash && \
+    cd /root/uav_ws && \
+    catkin_make --pkg larics_motion_planning --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     source /root/uav_ws/devel/setup.bash
 
 WORKDIR /root/uav_ws
