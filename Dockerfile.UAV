@@ -36,84 +36,93 @@ RUN python3 -m pip install --upgrade pip && \
 
 # Clone catkinized dependencies from nbvp_exploration repository
 SHELL ["/bin/bash", "-lc"]
-RUN mkdir -p /root/uav_ws/src/nbvp_exploration
 
-COPY ./nbvp_exploration/ /root/uav_ws/src/nbvp_exploration
+ENV WS=sim_ws
+RUN mkdir -p /root/${WS}/src/nbvp_exploration
+COPY ./nbvp_exploration/ /root/${WS}/src/nbvp_exploration
 RUN source /opt/ros/noetic/setup.bash && \
-    cd /root/uav_ws && \
+    cd /root/${WS} && \
     rm -rf ./src/nbvp_exploration/interface_nbvp_rotors && \
-    catkin_make --pkg eigen_catkin --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    catkin_make --pkg gflags_catkin --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    catkin_make --pkg glog_catkin --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    catkin_make --pkg eigen_checks --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    catkin_make --pkg kdtree --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    catkin_make --pkg minkindr --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    catkin_make --pkg minkindr_conversions --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    catkin_make --pkg volumetric_mapping --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    source /root/uav_ws/devel/setup.bash
-
-RUN source /opt/ros/noetic/setup.bash && \
-    cd /root/uav_ws && \
-    catkin_make --pkg nbvplanner --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    source /root/uav_ws/devel/setup.bash
+    catkin build eigen_catkin && \
+    catkin build gflags_catkin && \
+    catkin build eigen_catkin && \
+    catkin build glog_catkin && \
+    catkin build eigen_checks && \
+    catkin build minkindr && \
+    catkin build minkindr_conversions && \
+    catkin build volumetric_mapping && \
+    catkin build nbvplanner && \
+    source /root/${WS}/devel/setup.bash
 
 # mav_msgs are only available for melodic
 # use source to compiel mav_msgs
-COPY ./mav_comm /root/uav_ws/src/mav_comm
-RUN source /opt/ros/noetic/setup.bash && \
-    cd /root/uav_ws && \
-    catkin_make --pkg mav_msgs --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    source /root/uav_ws/devel/setup.bash
+# COPY ./mav_comm /root/${WS}/src/mav_comm
+# RUN source /opt/ros/noetic/setup.bash && \
+#     cd /root/${WS} && \
+#     catkin build mav_msgs && \
+#     source /root/${WS}/devel/setup.bash
 
-COPY ./nbvp_exploration/interface_nbvp_rotors /root/uav_ws/src/nbvp_exploration/interface_nbvp_rotors
+COPY ./nbvp_exploration/interface_nbvp_rotors /root/${WS}/src/nbvp_exploration/interface_nbvp_rotors
 RUN source /opt/ros/noetic/setup.bash && \
-    cd /root/uav_ws && \
-    rm -rf /root/uav_ws/devel/include/eigen3 && \
-    catkin_make --pkg interface_nbvp_rotors --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    source /root/uav_ws/devel/setup.bash
+    cd /root/${WS} && \
+    rm -rf /root/${WS}/devel/include/eigen3 && \
+    catkin build interface_nbvp_rotors && \
+    source /root/${WS}/devel/setup.bash
 
 # #############################
 # #  LARICS MOTION PLANNING
 # #############################
-COPY ./aerial_manipulators/aerial_manipulators_description /root/uav_ws/src/aerial_manipulators/aerial_manipulators_description
+COPY ./aerial_manipulators/aerial_manipulators_description /root/${WS}/src/aerial_manipulators/aerial_manipulators_description
 RUN source /opt/ros/noetic/setup.bash && \
-    cd /root/uav_ws && \
-    catkin_make --pkg aerial_manipulators_description --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    source /root/uav_ws/devel/setup.bash
+    cd /root/${WS} && \
+    catkin build aerial_manipulators_description && \
+    source /root/${WS}/devel/setup.bash
 
-COPY ./aerial_manipulators/aerial_manipulators_moveit /root/uav_ws/src/aerial_manipulators/aerial_manipulators_moveit
+COPY ./aerial_manipulators/aerial_manipulators_moveit /root/${WS}/src/aerial_manipulators/aerial_manipulators_moveit
 RUN source /opt/ros/noetic/setup.bash && \
-    cd /root/uav_ws && \
-    catkin_make --pkg asap_manipulator --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    catkin_make --pkg wp_manipulator --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    catkin_make --pkg wp_manipulator_3r --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    catkin_make --pkg wp_manipulator_3rx --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    source /root/uav_ws/devel/setup.bash
+    cd /root/${WS} && \
+    catkin build aerial_manipulators_description && \
+    catkin build asap_manipulator && \
+    catkin build wp_manipulator && \
+    catkin build wp_manipulator_3r && \
+    catkin build wp_manipulator_3rx && \
+    source /root/${WS}/devel/setup.bash
 
-COPY ./larics_gazebo_worlds /root/uav_ws/src/larics_gazebo_worlds
+COPY ./larics_gazebo_worlds /root/${WS}/src/larics_gazebo_worlds
 RUN source /opt/ros/noetic/setup.bash && \
-    cd /root/uav_ws && \
-    catkin_make --pkg larics_gazebo_worlds --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    source /root/uav_ws/devel/setup.bash
+    cd /root/${WS} && \
+    catkin build larics_gazebo_worlds && \
+    source /root/${WS}/devel/setup.bash
 
-COPY ./topp_ros /root/uav_ws/src/topp_ros
+COPY ./topp_ros /root/${WS}/src/topp_ros
 RUN source /opt/ros/noetic/setup.bash && \
-    cd /root/uav_ws && \
-    catkin_make --pkg topp_ros --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    source /root/uav_ws/devel/setup.bash
+    cd /root/${WS} && \
+    catkin build topp_ros && \
+    source /root/${WS}/devel/setup.bash
 
-COPY ./larics_motion_planning /root/uav_ws/src/larics_motion_planning
-RUN cd /root/uav_ws/src/larics_motion_planning && \
+COPY ./larics_motion_planning /root/${WS}/src/larics_motion_planning
+RUN cd /root/${WS}/src/larics_motion_planning && \
     git checkout exploration && \
     # The following dependencies have been removed in exploration branch.
     # 239171d Remove dependency on aerial manipulators and impedance control repositories
     source /opt/ros/noetic/setup.bash && \
-    cd /root/uav_ws && \
-    catkin_make --pkg larics_motion_planning --cmake-args -DCMAKE_BUILD_TYPE=Release && \
-    source /root/uav_ws/devel/setup.bash
+    cd /root/${WS} && \
+    catkin build larics_motion_planning && \
+    source /root/${WS}/devel/setup.bash
 
-WORKDIR /root/uav_ws
+COPY ./velodyne_simulator /root/${WS}/src/velodyne_simulator
+RUN source /opt/ros/noetic/setup.bash && \
+    cd /root/${WS} && \
+    catkin build velodyne_description && \
+    catkin build velodyne_gazebo_plugins && \
+    catkin build velodyne_simulator && \
+    source /root/${WS}/devel/setup.bash
+
+WORKDIR /root/${WS}
 COPY ./entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
+
+WORKDIR /root/${WS}/src/nbvp_exploration/startup/kopterworx_one_flying
+COPY ./session.yml /root/${WS}/session_tmp.yml
 ENTRYPOINT [ "/root/entrypoint.sh" ]
 CMD ["/bin/bash"]
