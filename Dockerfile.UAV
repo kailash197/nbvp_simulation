@@ -118,11 +118,23 @@ RUN source /opt/ros/noetic/setup.bash && \
     catkin build velodyne_simulator && \
     source /root/${WS}/devel/setup.bash
 
+# CUSTOMIZED FILES
+COPY ./custom_session.yml \
+    /root/${WS}/src/nbvp_exploration/startup/kopterworx_one_flying/session.yml
+COPY ./custom_shell_scripts.sh  \
+    /root/${WS}/src/nbvp_exploration/startup/kopterworx_one_flying/custom_shell_scripts.sh
+COPY ./custom_topp_config_custom.yaml \
+    /root/${WS}/src/nbvp_exploration/startup/kopterworx_one_flying/custom_config/topp_config_custom.yaml
+COPY ./custom_exploration.bash \
+    /root/${WS}/src/nbvp_exploration/startup/kopterworx_one_flying/exploration.bash
+RUN chmod +x /root/${WS}/src/nbvp_exploration/startup/kopterworx_one_flying/exploration.bash
+COPY ./custom_script.bash\
+    /root/custom_script.bash
+RUN chmod +x /root/custom_script.bash
+
 WORKDIR /root/${WS}
 COPY ./entrypoint.sh /root/entrypoint.sh
 RUN chmod +x /root/entrypoint.sh
-
 WORKDIR /root/${WS}/src/nbvp_exploration/startup/kopterworx_one_flying
-COPY ./session.yml /root/${WS}/session_tmp.yml
 ENTRYPOINT [ "/root/entrypoint.sh" ]
 CMD ["/bin/bash"]
