@@ -21,7 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.UAV
-    image: uav_simulation:latest
+    image: kkhadka343/uav_simulation:latest
     container_name: uav_ros_simulation
     environment:
       - DISPLAY=${DISPLAY}
