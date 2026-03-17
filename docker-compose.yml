@@ -40,11 +40,36 @@ services:
     privileged: true
     stdin_open: true
     tty: true
-    # For GPU support (uncomment if needed)
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
+  uav_ros_sim_gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.UAV
+    container_name: uav_ros_sim_gpu
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - XAUTHORITY=/tmp/.docker.xauth
+      - TERM=xterm-256color
+      - SSH_AUTH_SOCK=/ssh-agent
+      # NVIDIA GPU environment variables
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ~/.ssh/ssh_auth_sock:/ssh-agent:rw  # SSH agent forwarding
+    devices:
+      - /dev/dri:/dev/dri           # for OpenGL on Intel/AMD
+    # NVIDIA GPU support (for Docker Compose 1.28+)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, compute, utility, graphics]
+    network_mode: host
+    # privileged: true  # Try removing or commenting this out first
+    stdin_open: true
+    tty: true

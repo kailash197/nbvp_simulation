@@ -12,23 +12,23 @@ windows:
   - gazebo:
       layout: tiled
       panes:
-        - "#ws; waitForRos; roslaunch ardupilot_gazebo kopterworx.launch use_sim_time:=true enable_velodyne:=true max_range:=20 world:=$(rospack find interface_nbvp_rotors)/worlds/apartment.world x:=0 y:=0"
+        - "#ws; roslaunch ardupilot_gazebo kopterworx.launch use_sim_time:=true enable_velodyne:=true max_range:=20 world:=$(rospack find interface_nbvp_rotors)/worlds/apartment.world x:=0 y:=0"
   - arm&takeof:
       layout: tiled
       panes:
-        - "#waitForRos; waitForOdometry; roslaunch uav_ros_control pid_carrot.launch manual_takeoff:=false"
+        - "#roslaunch uav_ros_control pid_carrot.launch manual_takeoff:=false"
         - "#rosrun ardupilot_gazebo automatic_takeoff.sh 0.7"
   - trajectory:
       layout: tiled
       panes:
-        - "#waitForRos; waitForOdometry; roslaunch uav_ros_tracker topp_tracker.launch tracker_config:=./custom_config/topp_config_custom.yaml"
+        - "# roslaunch uav_ros_tracker topp_tracker.launch tracker_config:=./custom_config/topp_config_custom.yaml"
   - exploration:
       layout: tiled
       panes:
-        - "#waitForRos; waitForOdometry; roslaunch interface_nbvp_rotors planner.launch"
-        - "#waitForRos; waitForOdometry; roslaunch interface_nbvp_rotors execute_trajectory.launch"
-        - "#waitForRos; waitForOdometry; roslaunch interface_nbvp_rotors kopterworx_exploration.launch"
+        - "#roslaunch interface_nbvp_rotors planner.launch"
+        - "#roslaunch interface_nbvp_rotors execute_trajectory.launch"
+        - "#roslaunch interface_nbvp_rotors kopterworx_exploration.launch"
   - rviz:
       layout: tiled
       panes:
-        - "#waitForRos; waitForOdometry; rosrun rviz rviz -d ~/${WS}/src/nbvp_exploration/interface_nbvp_rotors/rviz/nbv.rviz"
+        - "#rosrun rviz rviz -d ~/${WS}/src/nbvp_exploration/interface_nbvp_rotors/rviz/nbv.rviz"
