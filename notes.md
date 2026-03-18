@@ -1,3 +1,33 @@
+# **<font color='green'>Arm & Takeoff</font>** 
+   
+   - "#roslaunch uav_ros_control pid_carrot.launch manual_takeoff:=false"
+        - "#rosrun ardupilot_gazebo automatic_takeoff.sh 0.7"
+## Node 1. 
+Node [/red/carrot_reference_node]
+Publications: 
+ * /red/carrot/cmd_vel [geometry_msgs/TwistStamped]
+ * /red/carrot/control_error [uav_ros_msgs/ControlError]
+ * /red/carrot/pose [geometry_msgs/PoseStamped]
+ * /red/carrot/status [std_msgs/String]
+ * /red/carrot/trajectory [trajectory_msgs/MultiDOFJointTrajectoryPoint]
+ * /red/carrot/yaw [std_msgs/Float64]
+ * /red/uav/yaw [std_msgs/Float64]
+ * /rosout [rosgraph_msgs/Log]
+
+Subscriptions: 
+ * /clock [rosgraph_msgs/Clock]
+ * /red/joy [unknown type]
+ * /red/mavros/global_position/local [nav_msgs/Odometry]
+ * /red/mavros/state [mavros_msgs/State]
+ * /red/position_hold/trajectory [trajectory_msgs/MultiDOFJointTrajectoryPoint]
+
+Services: 
+ * /red/carrot_reference_node/get_loggers
+ * /red/carrot_reference_node/set_logger_level
+ * /red/land
+ * /red/position_hold
+ * /red/takeoff
+
 # **<font color='green'>Exploration</font>**
 - This launch file sets up a **complete autonomous exploration system** using NBVP (Next Best View Planning).
 - Creates a full autonomy pipeline for a UAV to explore unknown environments by continuously selecting and flying to the best next viewing positions.
