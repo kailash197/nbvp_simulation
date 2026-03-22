@@ -43,15 +43,15 @@ COPY ./nbvp_exploration/ /root/${WS}/src/nbvp_exploration
 RUN source /opt/ros/noetic/setup.bash && \
     cd /root/${WS} && \
     rm -rf ./src/nbvp_exploration/interface_nbvp_rotors && \
-    catkin build eigen_catkin && \
-    catkin build gflags_catkin && \
-    catkin build eigen_catkin && \
-    catkin build glog_catkin && \
-    catkin build eigen_checks && \
-    catkin build minkindr && \
-    catkin build minkindr_conversions && \
-    catkin build volumetric_mapping && \
-    catkin build nbvplanner && \
+    catkin build -j4 -l4 eigen_catkin && \
+    catkin build -j4 -l4 gflags_catkin && \
+    catkin build -j4 -l4 eigen_catkin && \
+    catkin build -j4 -l4 glog_catkin && \
+    catkin build -j4 -l4 eigen_checks && \
+    catkin build -j4 -l4 minkindr && \
+    catkin build -j4 -l4 minkindr_conversions && \
+    catkin build -j4 -l4 volumetric_mapping && \
+    catkin build -j4 -l4 nbvplanner && \
     source /root/${WS}/devel/setup.bash
 
 # mav_msgs are only available for melodic
@@ -59,14 +59,14 @@ RUN source /opt/ros/noetic/setup.bash && \
 # COPY ./mav_comm /root/${WS}/src/mav_comm
 # RUN source /opt/ros/noetic/setup.bash && \
 #     cd /root/${WS} && \
-#     catkin build mav_msgs && \
+#     catkin build -j4 -l4 mav_msgs && \
 #     source /root/${WS}/devel/setup.bash
 
 COPY ./nbvp_exploration/interface_nbvp_rotors /root/${WS}/src/nbvp_exploration/interface_nbvp_rotors
 RUN source /opt/ros/noetic/setup.bash && \
     cd /root/${WS} && \
     rm -rf /root/${WS}/devel/include/eigen3 && \
-    catkin build interface_nbvp_rotors && \
+    catkin build -j4 -l4 interface_nbvp_rotors && \
     source /root/${WS}/devel/setup.bash
 
 # #############################
@@ -75,29 +75,29 @@ RUN source /opt/ros/noetic/setup.bash && \
 COPY ./aerial_manipulators/aerial_manipulators_description /root/${WS}/src/aerial_manipulators/aerial_manipulators_description
 RUN source /opt/ros/noetic/setup.bash && \
     cd /root/${WS} && \
-    catkin build aerial_manipulators_description && \
+    catkin build -j4 -l4 aerial_manipulators_description && \
     source /root/${WS}/devel/setup.bash
 
 COPY ./aerial_manipulators/aerial_manipulators_moveit /root/${WS}/src/aerial_manipulators/aerial_manipulators_moveit
 RUN source /opt/ros/noetic/setup.bash && \
     cd /root/${WS} && \
-    catkin build aerial_manipulators_description && \
-    catkin build asap_manipulator && \
-    catkin build wp_manipulator && \
-    catkin build wp_manipulator_3r && \
-    catkin build wp_manipulator_3rx && \
+    catkin build -j4 -l4 aerial_manipulators_description && \
+    catkin build -j4 -l4 asap_manipulator && \
+    catkin build -j4 -l4 wp_manipulator && \
+    catkin build -j4 -l4 wp_manipulator_3r && \
+    catkin build -j4 -l4 wp_manipulator_3rx && \
     source /root/${WS}/devel/setup.bash
 
 COPY ./larics_gazebo_worlds /root/${WS}/src/larics_gazebo_worlds
 RUN source /opt/ros/noetic/setup.bash && \
     cd /root/${WS} && \
-    catkin build larics_gazebo_worlds && \
+    catkin build -j4 -l4 larics_gazebo_worlds && \
     source /root/${WS}/devel/setup.bash
 
 COPY ./topp_ros /root/${WS}/src/topp_ros
 RUN source /opt/ros/noetic/setup.bash && \
     cd /root/${WS} && \
-    catkin build topp_ros && \
+    catkin build -j4 -l4 topp_ros && \
     source /root/${WS}/devel/setup.bash
 
 COPY ./larics_motion_planning /root/${WS}/src/larics_motion_planning
@@ -107,15 +107,15 @@ RUN cd /root/${WS}/src/larics_motion_planning && \
     # 239171d Remove dependency on aerial manipulators and impedance control repositories
     source /opt/ros/noetic/setup.bash && \
     cd /root/${WS} && \
-    catkin build larics_motion_planning && \
+    catkin build -j4 -l4 larics_motion_planning && \
     source /root/${WS}/devel/setup.bash
 
 COPY ./velodyne_simulator /root/${WS}/src/velodyne_simulator
 RUN source /opt/ros/noetic/setup.bash && \
     cd /root/${WS} && \
-    catkin build velodyne_description && \
-    catkin build velodyne_gazebo_plugins && \
-    catkin build velodyne_simulator && \
+    catkin build -j4 -l4 velodyne_description && \
+    catkin build -j4 -l4 velodyne_gazebo_plugins && \
+    catkin build -j4 -l4 velodyne_simulator && \
     source /root/${WS}/devel/setup.bash
 
 # CUSTOMIZED FILES
